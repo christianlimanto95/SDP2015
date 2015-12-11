@@ -71,7 +71,7 @@ class Portalmahasiswa extends CI_Controller {
 			
 			if ($data[0]->kategori == "0")
 			{
-				$this->load->view('portalmahasiswa_pending');
+				$this->load->view('pmb/portalmahasiswa_pending');
 			}
 			else
 			{
@@ -114,8 +114,8 @@ class Portalmahasiswa extends CI_Controller {
 				$param['persen'] = ($progress * 25) . "%";
 				
 				$paramHeader['countNewNotif'] = "";
-				$this->load->view('includes/header', $paramHeader);
-				$this->load->view('portalmahasiswa_home', $param);
+				$this->load->view('pmb/header', $paramHeader);
+				$this->load->view('pmb/portalmahasiswa_home', $param);
 			}
 		}
 		
@@ -261,8 +261,8 @@ class Portalmahasiswa extends CI_Controller {
 			$param['pekerjaan_wali'] = $data[0]->pekerjaan_wali;
 			
 			$paramHeader['countNewNotif'] = "";
-			$this->load->view('includes/header', $paramHeader);
-			$this->load->view('portalmahasiswa_profile', $param);
+			$this->load->view('pmb/header', $paramHeader);
+			$this->load->view('pmb/portalmahasiswa_profile', $param);
 		}
 	}
 	
