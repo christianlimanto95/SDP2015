@@ -136,7 +136,14 @@
 			return $result->nip_dosen;
 		}
 		
-		//KEPERLUAN PMB
+		// KEPERLUAN PMB----------------------->
+		
+		/* -----------------------------------------------------
+		Function getDataMahasiswaByNRP
+		Untuk mendapatkan data - data yg umum mahasiswa seperti jumlah sks, jurusan
+		Input: nrp mahasiswa
+		Output: data mahasiswa
+		----------------------------------------------------- */
 		function getDataMahasiswaByNRP($nrp)
 		{
 			$this->db->select('m.nomor_registrasi_id, m.nrp, m.nama, m.sks, m.semester, i.jurusan, i.kategori, i.harga_usp');
@@ -146,22 +153,18 @@
 			return $this->db->get()->result();
 		}
 		
+		/* -----------------------------------------------------
+		Function getDetailStudent
+		Digunakan untuk mendapatkan detail mahasiswa
+		Input: nrp mahasiswa
+		Output: data detail mahasiswa
+		----------------------------------------------------- */
 		function getDataCalonMahasiswaByEmail($email)
 		{
 			$this->db->select('c.nomor_registrasi_id, c.nama, c.informasi_kurikulum_id, i.jurusan, i.kategori, i.harga_usp, c.status');
 			$this->db->from('calon_mahasiswa c, informasi_kurikulum i');
 			$this->db->where('c.email', $email);
 			$this->db->where('i.id = c.informasi_kurikulum_id');
-			return $this->db->get()->result();
-		}
-		
-		function getDataMahasiswaByEmail($email)
-		{
-			$this->db->select('m.nrp, m.nama, i.jurusan, i.kategori, i.harga_usp, m.sks');
-			$this->db->from('mahasiswa m, informasi_kurikulum i');
-			$this->db->where('m.email', $email);
-			$this->db->where('i.id = m.informasi_kurikulum_id');
-			
 			return $this->db->get()->result();
 		}
 		
@@ -257,6 +260,6 @@
 			$this->db->where('status !=','0');
 			return $this->db->get()->result();*/
 		}
-		// END OF KEPERLUAN PMB
+		// <--------------------END OF KEPERLUAN PMB
 	}
 ?>

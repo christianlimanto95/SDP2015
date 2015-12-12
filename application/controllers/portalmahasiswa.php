@@ -22,6 +22,9 @@ class Portalmahasiswa extends CI_Controller {
 		redirect('portalmahasiswa/home');
 	}
 	
+	/*
+		home
+	*/
 	public function home()
 	{
 		$nrp = "";
@@ -31,6 +34,21 @@ class Portalmahasiswa extends CI_Controller {
 		$login = false;
 		$mahasiswa = false;
 		
+		/* --PENGECEKAN AWAL--
+		
+			cek apakah ada session email (session email dibuat ketika calon mahasiswa login dari halaman login calon mahasiswa).
+			Jika ada, 
+				maka akan dicek di database table calon_mahasiswa, apakah sudah ada jurusannya (jurusan didapat jika sudah melakukan pendaftaran),
+				dicek juga apakah calon mahasiswa tsb sudah menjadi mahasiswa (status = 0 berarti mahasiswa),
+				jika ya,
+					dicek apakah ada session user_role (session tsb didapat setelah berhasil login dari halaman login utama)
+					jika ya,
+						jika bukan user_role nya bukan mahasiswa, redirect ke halaman login utama					
+				
+			cek apakah session user_role ada dan isinya adalah "mahasiswa",
+				jika ya, berarti memang mahasiswa
+				jika tidak, redirect ke halaman login utama
+		*/
 		if ($this->session->userdata('email'))
 		{
 			$data = $this->mahasiswa_model->getDataCalonMahasiswaByEmail($this->session->userdata('email'));
@@ -121,6 +139,7 @@ class Portalmahasiswa extends CI_Controller {
 		
 	}
 	
+	
 	public function profile()
 	{
 		$nrp = "";
@@ -129,6 +148,10 @@ class Portalmahasiswa extends CI_Controller {
 		$login = false;
 		$mahasiswa = false;
 		
+		/*
+			--PENGECEKAN AWAL--
+			sama seperti pada function home
+		*/
 		if ($this->session->userdata('email'))
 		{
 			$data = $this->mahasiswa_model->getFullDataCalonMahasiswaByEmail($this->session->userdata('email'));
@@ -164,6 +187,7 @@ class Portalmahasiswa extends CI_Controller {
 			$param["queryKota"] = $this->kota_model->selectKota();
 			$param["queryProvinsi"] = $this->provinsi_model->selectProvinsi();
 			
+			//jika button save ditekan, akan masuk ke sini
 			if ($this->input->post() == true)
 			{
 				$data = "";
@@ -204,6 +228,8 @@ class Portalmahasiswa extends CI_Controller {
 				$data['nomor_telp_wali'] = $this->input->post('nomor_telp_wali');
 				$data['pekerjaan_wali'] = $this->input->post('pekerjaan_wali');
 				
+				//$nrp kosong berarti bukan mahasiswa, berarti yg diupdate adalah table calon_mahasiswa
+				//$nrp ada isinya berarti mahasiswa, berarti yg diupdate adalah table mahasiswa
 				if ($nrp == "")
 				{
 					$this->mahasiswa_model->updateCalonMahasiswa($data);
