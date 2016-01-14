@@ -16,7 +16,7 @@
 		<h2 style="margin: 0;">BIODATA</h2>
 	</div>
 	
-				
+	<img src="<?php echo base_url("uploads") . "/" . $nomor_registrasi_id . "-Foto.jpg"; ?>" style="width: 150px; position: absolute; margin: 50px 0px 0px -180px;">
 	
 	<?php echo form_open('portalmahasiswa/profile'); ?>
 	
@@ -60,8 +60,7 @@
 			$dataNomor_hp = array('data' => $nomor_hp, 'id' => 'nomor_hp');
 			$this->table->add_row('Nomor HP', $titikDua, $dataNomor_hp);
 			
-			$dataEmail = array('data' => $email, 'id' => 'email');
-			$this->table->add_row('Email', $titikDua, $dataEmail);
+			$this->table->add_row('Email', $titikDua, $email);
 			
 			echo $this->table->generate();
 			?>
@@ -113,8 +112,8 @@
 	
 	<?php echo form_close(); ?>
 	
-	<?php require_once('footer.php'); ?>
 </div>
+<?php require_once('footer.php'); ?>
 </body>
 <script>
 
@@ -236,10 +235,10 @@ function provinsiSelected(milik)
 	
 	
 	$optionStatus_sosial = array(
-		'Single' => 'Single',
-		'Menikah' => 'Menikah',
-		'Duda' => 'Duda',
-		'Janda' => 'Janda'
+		'single' => 'Single',
+		'menikah' => 'Menikah',
+		'duda' => 'Duda',
+		'janda' => 'Janda'
 	);
 	$paramStatus_sosial = 'class="form-control" name="status_sosial" id="cbstatus_sosial"';
 	$dataStatus_sosial = form_dropdown('status_sosial', $optionStatus_sosial, $status_sosial, $paramStatus_sosial);
@@ -247,11 +246,11 @@ function provinsiSelected(milik)
 	
 	
 	$optionAgama = array(
-		'Buddha' => 'Buddha',
-		'Hindu' => 'Hindu',
-		'Katolik' => 'Katolik',
-		'Kristen' => 'Kristen',
-		'Islam' => 'Islam'
+		'buddha' => 'Buddha',
+		'hindu' => 'Hindu',
+		'katolik' => 'Katolik',
+		'kristen' => 'Kristen',
+		'islam' => 'Islam'
 	);
 	$paramAgama = 'class="form-control" name="agama" id="cbagama"';
 	$dataAgama = form_dropdown('agama', $optionAgama, $agama, $paramAgama);
@@ -329,10 +328,6 @@ function editMode()
 	$("#nomor_hp").html("<input type='text' name='nomor_hp' id='txtnomor_hp' class='form-control' value='" + value + "'>");
 	$("#txtnomor_hp").css("width", "130px");
 	
-	value = "<?= $email ?>";
-	$("#email").html("<input type='text' name='email' id='txtemail' class='form-control' value='" + value + "'>");
-	$("#txtemail").css("width", "300px");
-	
 	value = $("#nama_wali").html();
 	$("#nama_wali").html("<input type='text' name='nama_wali' id='txtnama_wali' class='form-control' value='" + value + "'>");
 	$("#txtnama_wali").css("width", "250px");
@@ -374,7 +369,6 @@ function viewMode(){
 	$("#kota").html("<?php echo $kota; ?>");
 	$("#kodepos").html("<?php echo $kodepos; ?>");
 	$("#nomor_hp").html("<?php echo $nomor_hp; ?>");
-	$("#email").html("<?php echo $email; ?>");
 	
 	$("#nama_wali").html("<?php echo $nama_wali; ?>");
 	$("#alamat_wali").html("<?php echo $alamat_wali; ?>");

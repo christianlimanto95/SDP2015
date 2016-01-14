@@ -99,7 +99,7 @@
 		{
 			echo "<label>";
 			$jumlah = count($listUncategorized);
-			echo anchor(site_url('pimpinanPMB/listcalonmahasiswa'), "* ".$jumlah . " Calon Mahasiswa Belum di Kategorikan"). " ";
+			echo anchor(site_url('pimpinanPMB/listcalonmahasiswa').'/readnotif', "* ".$jumlah . " Calon Mahasiswa Belum di Kategorikan"). " ";
 			
 			if ($jumlah==0)
 			{

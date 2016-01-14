@@ -26,6 +26,17 @@ class Modelnya extends CI_Model
 		return $this->db->affected_rows();
 	}
 	
+	function ubahStatusNotif()
+	{
+		$data = array(
+					'status_baca' => "1"
+					);
+			
+		$this->db->where('status_baca',"0");
+		$this->db->where('judul',"belum dikategorikan");
+		$this->db->update('notifikasi', $data);
+	}
+	
 	function cekuser($email, $password)
 	{
 		$datanya = $this->selectuser($email, $password);
@@ -57,6 +68,7 @@ class Modelnya extends CI_Model
 	{
 		$this->db->select('judul');
 		$this->db->from('notifikasi');
+		$this->db->where('status_baca','0');
 		$this->db->where('judul','belum dikategorikan');
 		
 		$query = $this->db->get()->result();
@@ -95,8 +107,9 @@ class Modelnya extends CI_Model
 	{
 		$listquery = explode("|",$list);
 		$querynya = "";
+		
 		for($i=0;$i<count($listquery)-1;$i++)
-		{
+		{	
 			if($i == (count($listquery)-2))
 			{
 				if ($listquery[$i]=="jurusan" || $listquery[$i]=="kategori")
@@ -108,6 +121,7 @@ class Modelnya extends CI_Model
 						$querynya .= " substr(calon_mahasiswa.".$listquery[$i].",6,2) as 'informasi_kurikulum_id'";
 					}
 					else{
+						
 						$querynya .= " calon_mahasiswa.".$listquery[$i];
 					}
 				}
@@ -287,9 +301,9 @@ class Modelnya extends CI_Model
 	function NotifToBAU($noreg, $kategori)
 	{
 		$data = array(
-				'id' => "BAU" . $noreg,
-				'judul' => "Kategori Mahasiswa",
-				'isi' => $kategori
+				'dari' => "PMB",
+				'tujuan' => "BAU",
+				'judul' => $noreg
 					);
 		
 		$this->db->insert('notifikasi',$data);

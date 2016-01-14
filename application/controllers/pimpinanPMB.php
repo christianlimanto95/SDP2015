@@ -22,36 +22,6 @@ class pimpinanPMB extends CI_Controller {
 		$this->home();
 	}
 	
-	/*
-	public function login()
-	{
-		$data["email"] = "";
-		$data["password"] = "";
-		
-		if ($this->input->post('btnLogin')==true)
-		{
-			$data["email"]= $this->input->post('txtEmail',true);
-			$data["password"]= $this->input->post('txtPassword',true);
-			
-			if ($this->modelnya->cekuser($data["email"],$data["password"]) == true)
-			{
-				$this->home();
-			}
-			else
-			{
-				echo "USERNAME/PASSWORD SALAH!";
-				$this->load->view('pmb/viewlogin',$data);
-			}
-				
-		}
-		else{
-			$data["email"]="";
-			$data["nohp"]="";
-			$data["password"]="";
-			$this->load->view('pmb/viewlogin',$data);
-		}
-	}
-	*/
 	public function home()
 	{
 		$data['listUncategorized']=$this->modelnya->cekNotif();
@@ -61,6 +31,7 @@ class pimpinanPMB extends CI_Controller {
 	public function listCalonMahasiswa()
 	{
 		$this->load->library('session');
+		$data["currentPage"] = 0;
 		$data["param"] = 0;
 		$data["dropdownStatus"] = "";
 		$data['sort']='';
@@ -79,6 +50,37 @@ class pimpinanPMB extends CI_Controller {
 		$data["dropdownStatus"] = $this->input->post('status', true);
 		
 		$data["dropdownStatus"] = $this->session->userdata('sts');
+		
+		//---------------------------------------------------
+		//start itu di pake buat di halaman listcalon mahasiswa, buat nentuin, list yang di tampilkan di start dari index berapa sampe end nya di index berapa
+		if ($this->uri->segment(3)==true)
+		{
+			$page =  $this->uri->segment(3);
+			$data["currentPage"] = $page;
+			if($page == "readnotif")
+			{
+				$data["param"] = 0;
+				$this->session->set_userdata('status','0');
+				$this->session->set_userdata('sts','belum');
+				$data["dropdownStatus"] = "belum";
+				
+				$data["start"] = 0;
+				$data["end"] = 10;
+				//$this->modelnya->ubahStatusNotif();
+			}
+			else
+			{
+				$data["start"] = $page*10;
+				$data["end"] = (($page*10)+10);
+			}
+		}
+		else
+		{
+			$data["start"] = 0;
+			$data["end"] = 10;
+		}
+		//---------------------------------------------------
+		
 		if($data['dropdownStatus']=='sudah'){
 			$data['param']=1;
 		}
@@ -140,20 +142,6 @@ class pimpinanPMB extends CI_Controller {
 			$data['listCalonMahasiswa'] = $this->modelnya->listStatusCalonMahasiswa($data["param"]);
 		}
 		
-		//---------------------------------------------------
-		//start itu di pake buat di halaman listcalon mahasiswa, buat nentuin, list yang di tampilkan di start dari index berapa sampe end nya di index berapa
-		if ($this->uri->segment(3)==true)
-		{
-			$page =  $this->uri->segment(3);
-			$data["start"] = $page*10;
-			$data["end"] = (($page*10)+10);
-		}
-		else
-		{
-			$data["start"] = 0;
-			$data["end"] = 10;
-		}
-		//---------------------------------------------------
 		$this->load->view('pmb/viewlistcalonmahasiswa', $data);
 	}
 	
@@ -196,12 +184,10 @@ class pimpinanPMB extends CI_Controller {
 					if($this->input->post($r->nomor_registrasi_id)==true)
 					{
 						$total += $this->modelnya->updateKategori($this->input->post($r->nomor_registrasi_id),$r->nomor_registrasi_id);
-						if($this->modelnya->deleteNotif()>0)
-						{}
 						if($this->modelnya->notifToBAU($r->nomor_registrasi_id,$this->input->post($r->nomor_registrasi_id))>0)
 						{}
 						
-						/*$config= Array(
+						$config= Array(
 								'protocol' => 'smtp',
 								'smtp_host' => 'ssl://smtp.googlemail.com',
 								'smtp_port' => 465,
@@ -222,7 +208,7 @@ class pimpinanPMB extends CI_Controller {
 						}
 						else{
 							show_error($this->email->print_debugger());
-						}*/
+						}
 					}
 				}
 				echo "<script>alert('".$total." Data Updated')</script>";
@@ -247,6 +233,7 @@ class pimpinanPMB extends CI_Controller {
 	
 	public function laporan()
 	{
+		$data["currentPage"] = 0;
 		$this->load->library('session');
 		$this->load->model('Modelnya');
 		$data['allJurusan']=$this->Modelnya->getStatistikJurusan();
@@ -255,7 +242,7 @@ class pimpinanPMB extends CI_Controller {
 		$data["dropdownView"] = "nomor_registrasi_id";
 		$data["dropdownFilter"] = " ";
 		$data["listview"] = "";
-		$data["listview"] = "nomor_registrasi_id|nama|jurusan|informasi_kurikulum_id|";
+		$data["listview"] = "nomor_registrasi_id|nama|jurusan|informasi_kurikulum_id|provinsi|";
 		$data['sort']=$this->input->post('sort');
 		$data['kanan']=$this->input->post('cbKanan');
 		$data['by']='';
@@ -287,7 +274,6 @@ class pimpinanPMB extends CI_Controller {
 			}
 			
 			$data["listview"]="";
-			
 			for($i = 0 ;$i< count($cek);$i++)
 			{
 				if($cek[$i]!="")
@@ -300,10 +286,10 @@ class pimpinanPMB extends CI_Controller {
 			{
 				$data["listview"].=$this->input->post('view')."|";
 			}
+			$this->session->set_userdata('listview',$data['listview']);
 			$data["arrobj"]= $this->modelnya->laporanCalonMahasiswa($data["listview"],1,$this->session->userdata('by'),$this->session->userdata('bywhat'));	
 			
 		}
-		
 		if ($this->input->post('btnGo')==true)
 		{
 			$this->session->unset_userdata('by');
@@ -317,12 +303,32 @@ class pimpinanPMB extends CI_Controller {
 				$data["arrobj"]= $this->modelnya->laporanCalonMahasiswa($data["listview"],1,$data["by"],$data["bywhat"]);
 			}
 		}
+		
+		//start itu di pake buat di halaman listcalon mahasiswa, buat nentuin, list yang di tampilkan di start dari index berapa sampe end nya di index berapa
+		if ($this->uri->segment(3)==true)
+		{
+			$page =  $this->uri->segment(3);
+			$data["currentPage"] = $page;
+			$data["start"] = $page*10;
+			$data["end"] = (($page*10)+10);
+			$data['listview']=$this->session->userdata('listview');
+			$data["arrobj"]= $this->modelnya->laporanCalonMahasiswa($data["listview"],1,$this->session->userdata('by'),$this->session->userdata('bywhat'));	
+		}
+		else
+		{
+			$data["start"] = 0;
+			$data["end"] = 10;
+			$data['listview']=$this->session->userdata('listview');
+			$data["arrobj"]= $this->modelnya->laporanCalonMahasiswa($data["listview"],1,$this->session->userdata('by'),$this->session->userdata('bywhat'));	
+		}
+		//---------------------------------------------------
 		$this->load->view('pmb/viewlaporan', $data);
 	}
 	
 	
 	public function laporan1()
 	{
+		$data["currentPage"] = 0;
 		$this->load->library('session');
 		$this->load->model('Modelnya');
 		$data['allJurusan']=$this->Modelnya->getStatistikJurusan();
@@ -373,6 +379,7 @@ class pimpinanPMB extends CI_Controller {
 			{
 				$data["listview"].=$this->input->post('view')."|";
 			}
+			$this->session->set_userdata('listview',$data['listview']);
 			$data["arrobj"]= $this->modelnya->laporanCalonMahasiswa($data["listview"],0,"","");			
 			
 		}
@@ -401,12 +408,31 @@ class pimpinanPMB extends CI_Controller {
 				$data["arrobj"]= $this->modelnya->laporanCalonMahasiswa1($data["listview"],1,$data['by'],$data['bywhat'],$field,$data['sort']);
 			}
 		}
+		
+		if ($this->uri->segment(3)==true)
+		{
+			$page =  $this->uri->segment(3);
+			$data["currentPage"] = $page;
+			$data["start"] = $page*10;
+			$data["end"] = (($page*10)+10);
+			$data['listview']=$this->session->userdata('listview');
+			$data["arrobj"]= $this->modelnya->laporanCalonMahasiswa($data["listview"],1,$this->session->userdata('by'),$this->session->userdata('bywhat'));	
+		}
+		else
+		{
+			$data["start"] = 0;
+			$data["end"] = 10;
+			$data['listview']=$this->session->userdata('listview');
+			$data["arrobj"]= $this->modelnya->laporanCalonMahasiswa($data["listview"],1,$this->session->userdata('by'),$this->session->userdata('bywhat'));	
+		}
+		
 		$this->load->view('pmb/viewlaporan', $data);
 		
 	}
 	
 	public function laporan2()
 	{
+		$data["currentPage"] = 0;
 		$this->load->library('session');
 		$this->load->model('Modelnya');
 		$data['allJurusan']=$this->Modelnya->getStatistikJurusan();
@@ -467,6 +493,19 @@ class pimpinanPMB extends CI_Controller {
 			else{
 				$data["arrobj"]= $this->modelnya->laporanCalonMahasiswa($data["listview"],1,$data['by'],$data['bywhat']);
 			}
+		}
+		
+		if ($this->uri->segment(3)==true)
+		{
+			$page =  $this->uri->segment(3);
+			$data["currentPage"] = $page;
+			$data["start"] = $page*10;
+			$data["end"] = (($page*10)+10);
+		}
+		else
+		{
+			$data["start"] = 0;
+			$data["end"] = 10;
 		}
 		
 		$this->load->view('pmb/viewlaporan', $data);

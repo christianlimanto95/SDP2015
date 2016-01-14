@@ -103,6 +103,32 @@
 	.head {
 		padding: 0;
 	}
+	
+	.page {
+		display: inline-block;
+		border: 2px solid white;
+		width: 40px;
+		height: 30px;
+		margin: 0px 10px 0px 0px;
+		text-align: center;
+		padding: 3px 0px 0px 0px;
+	}
+	
+	.page:hover {
+		text-decoration: none;
+		border: 2px solid #337AB7;
+	}
+	
+	.page-current {
+		cursor: default;
+		color: #FFF;
+		background-color: #337AB7;
+		border-color: #2E6DA4;
+	}
+	
+	.page-current:hover {
+		color: white;
+	}
 </style>
 </head>
 <body>
@@ -264,7 +290,7 @@
 			
 			if(count($listCalonMahasiswa)<=$end)
 			{
-				$end = count($listCalonMahasiswa)-1;
+				$end = count($listCalonMahasiswa);
 			}
 			//harusnya ini pake foreach cuma karena mo pake paging jadnya yang $r-> tak ganti jadi $listcalonmahasiswa[index]-> , jdi klo mo balikin ke yang normal, for yang ada pake $i ini, gantien jadi foreach, yang $listcalonmahasiswa[index]-> jadi $r->
 			//foreach ($listCalonMahasiswa as $r)
@@ -300,7 +326,9 @@
 	//-------------------------------------MENAMPILKAN HALAMAN
 	for($i=0;$i<count($listCalonMahasiswa)/10;$i++)
 	{
-		echo anchor(site_url('pimpinanPMB/listCalonMahasiswa').'/'.$i, "[".($i+1)."]");
+		$currentPageClass = "";
+		
+		echo anchor(site_url('pimpinanPMB/listCalonMahasiswa').'/'.$i, ($i+1) . "", "class='page " . $currentPageClass . "'");
 	}
 	//-----------------------------------------
 	if(($dropdownStatus == "belum" || $dropdownStatus == "") && count($listCalonMahasiswa) > 0)

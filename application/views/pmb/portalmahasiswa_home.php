@@ -11,9 +11,36 @@
 </head> 
 
 <body>
+<?php
+if ($upload_error != "")
+{
+	echo "<div style='background-color: #FFCCCC'>";
+	echo $upload_error;
+	echo "</div>";
+}
+if ($upload_success != "")
+{
+	echo "<div style='background-color: #CCFFCC'>";
+	echo $upload_success;
+	echo "</div>";
+}
+
+if ($upload_error_skhun != "")
+{
+	echo "<div style='background-color: #FFCCCC'>";
+	echo $upload_error_skhun;
+	echo "</div>";
+}
+if ($upload_success_skhun != "")
+{
+	echo "<div style='background-color: #CCFFCC'>";
+	echo $upload_success_skhun;
+	echo "</div>";
+}
+?>
 
 <div id="container">
-	
+	<img src="<?php echo base_url("uploads") . "/" . $nomor_registrasi_id . "-Foto.jpg"; ?>" style="width: 150px; position: absolute; margin: 10px 0px 0px -180px;">
 	<div id="info">
 		<?php
 		$this->table->add_row('NRP', ': ' . $nrp);
@@ -37,7 +64,10 @@
 		Overall Progress
 		<div id="progressbar">
 			<div id="belum_bar"></div>
-			<div id="sudah_bar"></div>
+			<?php
+				$sudahBarWidth = $persen * 400 / 100;
+			?>
+			<div id="sudah_bar" style="width: <?= $sudahBarWidth ?>px;"></div>
 			<div id="persen"><?php echo $persen; ?></div>
 			<div id="sudah_notification"><?php echo $sudah_notification; ?></div>
 			<div id="belum_notification"><?php echo $belum_notification; ?></div>
@@ -63,14 +93,63 @@
 				        	<div id="panel-heading-berkas-icon"><span class="glyphicon glyphicon-menu-down"></span></div>
 				        	<div id="panel-heading-berkas-label">Upload Berkas</div>
 				        </a>
-				        <span class="glyphicon glyphicon-remove" id="panel-heading-berkas-status"></span>
+						<?php
+						if ($ijazah == "" || $skhun == "")
+						{
+							$statusIcon = "remove";
+							$statusColor = "red";
+						}
+						else
+						{
+							$statusIcon = "ok";
+							$statusColor = "green";
+						}
+						?>
+				        <span class="glyphicon glyphicon-<?= $statusIcon ?>" style="color: <?= $statusColor ?>" id="panel-heading-berkas-status"></span>
 					</div>
-					<div id="coll_berkas" class="panel-collapse collapse in">
+					<?php
+					$in = "";
+					$finished = false;
+					if ($ijazah == "" || $skhun == "")
+					{
+						$in = "in";
+					}
+					else
+					{
+						$finished = true;
+					}
+					?>
+					<div id="coll_berkas" class="panel-collapse collapse <?= $in ?>">
 						<?php echo form_open_multipart('portalmahasiswa/home'); ?>
-				        <h4>File ijazah</h4> <input type="file">
-				        <h4 style="margin-top: 20px;">File SKHUN</h4> <input type="file">
-				        <button type="submit" id="btn-save" class="btn btn-primary btn-lg">Save</button>
-				       	</form>
+						<h4>File ijazah</h4>
+						<?php
+						if ($ijazah == "")
+						{
+							echo '<input type="file" name="ijazah">';
+						}
+						else
+						{
+							echo '<span class="glyphicon glyphicon-ok" style="color: green"></span>';
+						}
+						?>
+						<h4 style="margin-top: 20px;">File SKHUN</h4>
+						<?php
+						if ($skhun == "")
+						{
+							echo '<input type="file" name="skhun">';
+						}
+						else
+						{
+							echo '<span class="glyphicon glyphicon-ok" style="color: green"></span>';
+						}
+						?>
+						<?php
+						if (!$finished)
+						{
+							echo '<input type="submit" id="btn-save" class="btn btn-primary btn-lg" value="Save">';
+						}
+						?>
+						</form>
 					</div>
 				</div>
 			</div>

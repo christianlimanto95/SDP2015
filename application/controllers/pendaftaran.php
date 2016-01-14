@@ -21,8 +21,12 @@ class Pendaftaran extends CI_Controller
     {
 		$id = "";
 		$login = false;
+		//pengecekan session email ada atau tidak, jika tidak maka user akan di redirect ke form registrasi.
 		if ($this->session->userdata('email'))
 		{
+			/*
+			$data mengambil data dari session berupa email. bertujuan untuk mengetahui id mana yang sedang login dan untuk mencari tahu apakah user yang login sudah melakukan pendaftaran atau belum. jika sudah melakukan pendaftaran maka di redirect ke home portal mahasiswa, jika belum melakukan pendaftaran maka user akan lanjut ke form pendaftaran.
+			*/
 			$data = $this->calon_mahasiswa_model->getDataCalonMahasiswaByEmail($this->session->userdata('email'));
 			if ($data[0]->informasi_kurikulum_id != "")
 			{
@@ -30,6 +34,7 @@ class Pendaftaran extends CI_Controller
 			}
 			else
 			{
+				//dari session email yang diterima, maka id user yang sedang login dapat diketahui
 				$id = $data[0]->nomor_registrasi_id;
 				$login = true;
 			}
@@ -39,11 +44,13 @@ class Pendaftaran extends CI_Controller
 			redirect("/registration", "refresh");
 		}
 		
+		//pengecekan dibawah ini untuk user yang login tetapi belum melakukan pendaftaran
 		if ($login)
 		{
 			$data["cetak"] = "";
 			$data["title"] = "";
 			
+			//mengambil data dari model
 			$data["queryKota"] = $this->kota_model->selectKota();
 			$data["queryProvinsi"] = $this->provinsi_model->selectProvinsi();
 			$data["queryKotaSekolah"] = $this->kota_model->selectKota();
@@ -52,12 +59,13 @@ class Pendaftaran extends CI_Controller
 			$data["queryProvinsiWali"] = $this->provinsi_model->selectProvinsi();
 			$data["queryJurusan"] = $this->informasi_kurikulum_model->selectInformasiKurikulum();
 			
+			//pengecekan apakah button daftar di tekan
 			if($this->input->post("daftar") == true)
 			{
+				//$data["blabla"] berguna untuk mengambil semua data yang telah diinputkan user.
 				$data["namaLengkap"] = $this->input->post("namaLengkap", true);
 				$data["jk"] = $this->input->post("jk", true);
 				$data["tempatLahir"] = $this->input->post("tempatLahir", true);
-				
 				$tanggalLahir = $this->input->post("tanggalLahir", true);
 				$data["tanggalLahir"] = Datetime::createFromFormat('d-m-Y', $tanggalLahir)->format('Y-m-d');
 				$data["kewarganegaraan"] = $this->input->post("kewarganegaraan", true);
@@ -96,6 +104,7 @@ class Pendaftaran extends CI_Controller
 				$data["noHpWali"] = $this->input->post("noHpWali", true);
 				$data["pekerjaanWali"] = $this->input->post("pekerjaanWali", true);
 				
+				//mengupdate data dari database pada tabel calon_mahasiswa dengan data yang diinputkan user
 				if(($this->calon_mahasiswa_model->updateCalonMahasiswa(
 					$data["namaLengkap"], 
 					$data["alamat"], 
@@ -118,8 +127,23 @@ class Pendaftaran extends CI_Controller
 					$data["noTelpSekolah"], 
 					$data["relasi"], $data["namaWali"], $data["alamatWali"], $data["provinsiWali"], $data["kotaWali"], $data["kodePosWali"], $data["noHpWali"], $data["pekerjaanWali"], $data["nilaiMat"], $data["nilaiIng"], $data["rapor"], $data["akteKelahiran"], $data["kartuKeluarga"], $data["foto"], $id)) > 0)
 				{
-					if(($this->notifikasi_model->insertNotifikasi("Belum Dikategorikan","")) > 0)
+					/*
+					jika data berhasil masuk ke dalam database, maka secara otomatis akan mengirimkan notifikasi ke pimpinan PMB dan memsukkan 
+					notifikasi ke dalam database dengan data
+					asal : PMB
+					tujuan : PIMPINAN PMB
+					judul : belum dikategorikan					
+					*/
+					if(($this->notifikasi_model->sendNotification("PMB","PIMPINAN PMB", "belum dikategorikan")) > 0)
 					{
+						/*
+						setelah berhasil memsukan notifikasi
+						data-data berupa jpg akan dimasukan dalam folder upload untuk diseleksi
+						jenis data foto :
+						type : jpg atau jpeg2
+						nama file : nama id - keterangan foto(foto, kk, dll)
+						akan di overwrite jika nama id nya sama
+						*/
 						$config = array(
 							'upload_path' => "./uploads/",
 							'allowed_types' => "jpg|JPG|JPEG|jpeg",
@@ -184,6 +208,10 @@ class Pendaftaran extends CI_Controller
 												}
 												else
 												{
+														/*
+														data-data foto yang di upload juga akan di resize, supaya tidak ada foto yang terlalu besar
+														atau terlau kecil.
+														*/
 														 $path = $_FILES['foto']['name'];
 														 $ext = pathinfo($path, PATHINFO_EXTENSION);
 														 $config['image_library']   = 'gd2';

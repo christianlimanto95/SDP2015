@@ -10,6 +10,8 @@ class Portalmahasiswa extends CI_Controller {
 		$this->load->helper('url');
 		$this->load->helper('form');
 		$this->load->library('table');
+		$this->load->library('upload');  
+		$this->load->library('image_lib');
 		$this->load->database();
 		$this->load->model('mahasiswa_model');
 		$this->load->model('kota_model');
@@ -33,6 +35,10 @@ class Portalmahasiswa extends CI_Controller {
 		$kategori = 0;
 		$login = false;
 		$mahasiswa = false;
+		$ijazah = "";
+		$skhun = "";
+		$param["ijazah"] = "";
+		$param["skhun"] = "";
 		
 		/* --PENGECEKAN AWAL--
 		
@@ -49,54 +55,177 @@ class Portalmahasiswa extends CI_Controller {
 				jika ya, berarti memang mahasiswa
 				jika tidak, redirect ke halaman login utama
 		*/
-		if ($this->session->userdata('email'))
-		{
-			$data = $this->mahasiswa_model->getDataCalonMahasiswaByEmail($this->session->userdata('email'));
-			if ($data[0]->informasi_kurikulum_id == "")
-			{
-				redirect("/pendaftaran", "refresh");
-			}
-			else
-			{
-				$nomor_registrasi = $data[0]->nomor_registrasi_id;
-				$login = true;
-				if ($data[0]->status == "0")
-				{
-					if($this->session->userdata('user_role') != 'mahasiswa'){
-						redirect('/');
-					}
-				}
-			}
-		}
+		
 		if($this->session->userdata('user_role') == 'mahasiswa'){
             $data = $this->mahasiswa_model->getDataMahasiswaByNRP($this->session->userdata('username'));
+			
 			$nrp = $data[0]->nrp;
+			$nomor_registrasi = $data[0]->nomor_registrasi_id;
+			
 			$mahasiswa = true;
 			$login = true;
         }
 		else
 		{
-			redirect("/");
+			if ($this->session->userdata('email'))
+			{
+				$data = $this->mahasiswa_model->getDataCalonMahasiswaByEmail($this->session->userdata('email'));
+				if ($data[0]->informasi_kurikulum_id == "")
+				{
+					redirect("/pendaftaran", "refresh");
+				}
+				else
+				{
+					$nomor_registrasi = $data[0]->nomor_registrasi_id;
+					
+					$login = true;
+					if ($data[0]->status == "0")
+					{
+						if($this->session->userdata('user_role') != 'mahasiswa'){
+							redirect('/');
+						}
+					}
+				}
+			}
+			else
+			{
+				redirect('/');
+			}
 		}
 		
 		if ($login)
 		{
+			$param["upload_success"] = "";
+			$param["upload_error"] = "";
+			$param["upload_success_skhun"] = "";
+			$param["upload_error_skhun"] = "";
 			$param["semester"] = "";
 			$param["pembayaran"] = "";
 			$param["tagihan"] = "";
 			$param["currentSemester"] = 1;
 			$progress = 0;
+			$ctrBelum = 0;
 			
 			if ($data[0]->kategori == "0")
 			{
+				$paramHeader['countNewNotif'] = "";
+				$this->load->view('nav/navbar', $paramHeader);
 				$this->load->view('pmb/portalmahasiswa_pending');
 			}
 			else
-			{
+			{	
+				$param["nomor_registrasi_id"] = $nomor_registrasi;
+				
+				if (!empty($_FILES["ijazah"]["name"]))
+				{
+					$config = array(
+						'upload_path' => "./uploads/",
+						'allowed_types' => "jpg|JPG|JPEG|jpeg",
+						'file_name' => $nomor_registrasi . "-ijazah",
+						'overwrite' => true
+					);
+					$this->upload->initialize($config);
+					
+					if (!$this->upload->do_upload("ijazah"))
+					{
+						$param["upload_error"] = $this->upload->display_errors();
+					}
+					else
+					{
+						$path = $_FILES['ijazah']['name'];
+						$ext = pathinfo($path, PATHINFO_EXTENSION);
+						$config['image_library']   = 'gd2';
+						$config['source_image']    = './uploads/'. $nomor_registrasi . "-ijazah." . $ext;
+						$config['create_thumb']    = FALSE;
+						$config['maintain_ratio']  = TRUE;
+						$config['master_dim']	   = 'width';
+						$config['width']           = 600;
+						$config['height']           = 600;
+						$this->image_lib->initialize($config);
+						$this->image_lib->resize();
+						$this->image_lib->clear();
+						
+						$file_name = $this->upload->data()["file_name"];
+						$data["nomor_registrasi_id"] = $nomor_registrasi;
+						$data["ijazah"] = $file_name;
+						$this->mahasiswa_model->upload_ijazah($data);
+						
+						$param["upload_success"] = "File ijazah anda telah berhasil diupload";
+					}
+				}
+				
+				if (!empty($_FILES["skhun"]["name"]))
+				{
+					$config = array(
+						'upload_path' => "./uploads/",
+						'allowed_types' => "jpg|JPG|JPEG|jpeg",
+						'file_name' => $nomor_registrasi . "-skhun",
+						'overwrite' => true
+					);
+					$this->upload->initialize($config);
+					
+					if (!$this->upload->do_upload("skhun"))
+					{
+						$param["upload_error_skhun"] .= $this->upload->display_errors();
+					}
+					else
+					{
+						$path = $_FILES['skhun']['name'];
+						$ext = pathinfo($path, PATHINFO_EXTENSION);
+						$config['image_library']   = 'gd2';
+						$config['source_image']    = './uploads/'. $nomor_registrasi . "-skhun." . $ext;
+						$config['create_thumb']    = FALSE;
+						$config['maintain_ratio']  = TRUE;
+						$config['master_dim']	   = 'width';
+						$config['width']           = 600;
+						$config['height']           = 600;
+						$this->image_lib->initialize($config);
+						$this->image_lib->resize();
+						$this->image_lib->clear();
+						
+						$file_name = $this->upload->data()["file_name"];
+						$data["nomor_registrasi_id"] = $nomor_registrasi;
+						$data["skhun"] = $file_name;
+						$this->mahasiswa_model->upload_skhun($data);
+						
+						$param["upload_success_skhun"] .= "File SKHUN anda telah berhasil diupload";
+					}
+				}
+				
+				$dataCalon = $this->mahasiswa_model->getDataCalonMahasiswaByNomorRegistrasi($data[0]->nomor_registrasi_id);
+				
+				$ijazah = $dataCalon[0]->ijazah;
+				$param["ijazah"] = $ijazah;
+				$skhun = $dataCalon[0]->skhun;
+				$param["skhun"] = $skhun;
+				
 				$param["sudah_notification"] = "Anda telah menyelesaikan :";
 				$param["belum_notification"] = "Anda belum menyelesaikan :";
-				$progress++;
+				
+				$progress++;				
 				$param["sudah_notification"] .= "<br>" . $progress . ". Pendaftaran";
+				
+				if ($ijazah == "")
+				{
+					$ctrBelum++;
+					$param["belum_notification"] .= "<br>" . $ctrBelum . ". Upload ijazah";
+				}
+				else
+				{
+					$progress++;
+					$param["sudah_notification"] .= "<br>" . $progress . ". Upload ijazah";
+				}
+				
+				if ($skhun == "")
+				{
+					$ctrBelum++;
+					$param["belum_notification"] .= "<br>" . $ctrBelum . ". Upload skhun";
+				}
+				else
+				{
+					$progress++;
+					$param["sudah_notification"] .= "<br>" . $progress . ". Upload skhun";
+				}
 				
 				$param["sks"] = "-";
 				$tagihan = "";
@@ -129,10 +258,10 @@ class Portalmahasiswa extends CI_Controller {
 				{
 					$param['sks'] = $data[0]->sks;
 				}
-				$param['persen'] = ($progress * 25) . "%";
+				$param['persen'] = ($progress * 20) . "%";
 				
 				$paramHeader['countNewNotif'] = "";
-				$this->load->view('pmb/header', $paramHeader);
+				$this->load->view('nav/navbar', $paramHeader);
 				$this->load->view('pmb/portalmahasiswa_home', $param);
 			}
 		}
@@ -152,35 +281,41 @@ class Portalmahasiswa extends CI_Controller {
 			--PENGECEKAN AWAL--
 			sama seperti pada function home
 		*/
-		if ($this->session->userdata('email'))
-		{
-			$data = $this->mahasiswa_model->getFullDataCalonMahasiswaByEmail($this->session->userdata('email'));
-			if ($data[0]->informasi_kurikulum_id == "")
-			{
-				redirect("/pendaftaran", "refresh");
-			}
-			else
-			{
-				$nomor_registrasi = $data[0]->nomor_registrasi_id;
-				$login = true;
-				if ($data[0]->status == "0")
-				{
-					if($this->session->userdata('user_role') != 'mahasiswa'){
-						redirect('/');
-					}
-				}
-			}
-		}
 		if($this->session->userdata('user_role') == 'mahasiswa'){
             $data = $this->mahasiswa_model->getFullDataMahasiswaByNRP($this->session->userdata('username'));
 			$nrp = $data[0]->nrp;
+			$nomor_registrasi = $data[0]->nomor_registrasi_id;
 			$mahasiswa = true;
 			$login = true;
         }
 		else
 		{
-			redirect("/");
+			if ($this->session->userdata('email'))
+			{
+				$data = $this->mahasiswa_model->getFullDataCalonMahasiswaByEmail($this->session->userdata('email'));
+				if ($data[0]->informasi_kurikulum_id == "")
+				{
+					redirect("/pendaftaran", "refresh");
+				}
+				else
+				{
+					$nomor_registrasi = $data[0]->nomor_registrasi_id;
+					$login = true;
+					if ($data[0]->status == "0")
+					{
+						if($this->session->userdata('user_role') != 'mahasiswa'){
+							redirect('/');
+						}
+					}
+				}
+			}
+			else
+			{
+				redirect("/");
+			}
 		}
+			
+		
 		
 		if ($login)
 		{
@@ -192,9 +327,11 @@ class Portalmahasiswa extends CI_Controller {
 			{
 				$data = "";
 				
+				$id = $this->getVerificationId();
+				$data["id"] = $id;
 				$data['nrp'] = $nrp;
-				$data['nomor_registrasi'] = $nomor_registrasi;
-				
+				$data['nomor_registrasi_id'] = $nomor_registrasi;
+				$data["calon_mahasiswa"] = "1";
 				$data['nama'] = $this->input->post('nama');
 				$data['kewarganegaraan'] = $this->input->post('kewarganegaraan');
 				$data['status_sosial'] = $this->input->post('status_sosial');
@@ -230,18 +367,27 @@ class Portalmahasiswa extends CI_Controller {
 				
 				//$nrp kosong berarti bukan mahasiswa, berarti yg diupdate adalah table calon_mahasiswa
 				//$nrp ada isinya berarti mahasiswa, berarti yg diupdate adalah table mahasiswa
+				
+				if ($nrp != "")
+				{
+					$data["calon_mahasiswa"] = "0";
+				}
+				$this->mahasiswa_model->insertBiodata_verifikasi($data);
+				
 				if ($nrp == "")
 				{
-					$this->mahasiswa_model->updateCalonMahasiswa($data);
 					$data = $this->mahasiswa_model->getFullDataCalonMahasiswaByEmail($this->session->userdata('email'));
 				}
 				else
 				{
-					$this->mahasiswa_model->updateMahasiswa($data);
 					$data = $this->mahasiswa_model->getFullDataMahasiswaByNRP($nrp);
 				}
+				
+				$data[0]->verification = $id;
+				$this->sendEmail($data);
 			}
 			
+			$param["nomor_registrasi_id"] = $nomor_registrasi;
 			$param['kategori'] = $data[0]->kategori;
 			$param['nama'] = ucwords($data[0]->nama);
 			$param['jurusan'] = $data[0]->jurusan;
@@ -287,8 +433,71 @@ class Portalmahasiswa extends CI_Controller {
 			$param['pekerjaan_wali'] = $data[0]->pekerjaan_wali;
 			
 			$paramHeader['countNewNotif'] = "";
-			$this->load->view('pmb/header', $paramHeader);
+			$this->load->view('nav/navbar', $paramHeader);
 			$this->load->view('pmb/portalmahasiswa_profile', $param);
+		}
+	}
+	
+	public function getVerificationId()
+	{
+		$chars = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890123456789";
+		$id = substr(str_shuffle($chars),0,20);
+		return $id;
+	}
+	
+	public function sendEmail($data)
+	{
+		$config= Array(
+			'protocol' => 'smtp',
+			'smtp_host' => 'ssl://smtp.googlemail.com',
+			'smtp_port' => 465,
+			'smtp_user' => 'pmbstts@gmail.com',
+			'smtp_pass' => 'sdps1infor2015'
+		);
+		
+		$this->load->library('email',$config);
+		$this->email->set_newline("\r\n");
+		
+		$this->email->from('pmbstts@gmail.com', 'PMB-STTS');
+		$this->email->to($data[0]->email);
+		$this->email->subject('Biodata Change Confirmation');
+		$message = "Hi, " . $data[0]->nama;
+		$message .= "\nIt seems that you have changed your biodata recently";
+		$message .= "\nIf you have done so, please click the link below to confirm your changes";
+		$message .= "\n" . base_url() . "portalmahasiswa/confirmation/" . $data[0]->verification;
+		$this->email->message($message);
+		if($this->email->send()){	
+			
+			echo "<script>alert('Kode verifikasi telah dikirim ke " . $data[0]->email . ", Silahkan periksa email anda.');</script>";
+		}
+		else{
+			show_error($this->email->print_debugger());
+		}
+	}
+	
+	public function confirmation()
+	{
+		$id = $this->uri->segment(3);
+		$data = $this->mahasiswa_model->getBiodata_verifikasiById($id);
+		if (count($data) > 0)
+		{
+			$calon_mahasiswa = $data[0]->calon_mahasiswa;
+			$updateData = $data[0];
+			if ($calon_mahasiswa == "1")
+			{
+				$this->mahasiswa_model->updateCalonMahasiswa($updateData);
+			}
+			else
+			{
+				$this->mahasiswa_model->updateMahasiswaByNomorRegistrasi($updateData);
+			}
+			$this->mahasiswa_model->deleteBiodata_verifikasi($data[0]->nomor_registrasi_id);
+			echo "Your Biodata has been updated. You will be redirected to home page in <span id='timer'>10</span> seconds or " . anchor(base_url(), "click here");
+			$this->load->view("pmb/verifikasi_biodata");
+		}
+		else
+		{
+			redirect(base_url());
 		}
 	}
 	

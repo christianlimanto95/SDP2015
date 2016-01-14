@@ -11,10 +11,20 @@
 	border: 0;
 }
 
+body, html {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+
 .footer {
-	position: absolute;
-	bottom: 0px;
-	left: 0px;
+	clear: both;
+}
+
+#overall_progress {
+	width: 400px;
+	margin: 0 auto;
+	text-align: center;
 }
 
 #judul {
@@ -35,7 +45,7 @@
 #datapribadi_title {
 	width: 180px;
 	font-size: 18pt;
-	background-color: #EDE8E3;
+	background-color: white;
 	text-align: center;
 	margin: -18px auto 0;
 }

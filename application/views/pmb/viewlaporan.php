@@ -123,6 +123,32 @@
 	.table tbody tr:hover {
 		background-color: #c5d9ec;
 	}
+	
+	.page {
+		display: inline-block;
+		border: 2px solid white;
+		width: 40px;
+		height: 30px;
+		margin: 0px 10px 0px 0px;
+		text-align: center;
+		padding: 3px 0px 0px 0px;
+	}
+	
+	.page:hover {
+		text-decoration: none;
+		border: 2px solid #337AB7;
+	}
+	
+	.page-current {
+		cursor: default;
+		color: #FFF;
+		background-color: #337AB7;
+		border-color: #2E6DA4;
+	}
+	
+	.page-current:hover {
+		color: white;
+	}
 </style>
 </head> 
 <body>
@@ -229,19 +255,25 @@
 		echo "</tr>";
 		echo "</thead>";
 		echo "<tbody>";
+		
+		if(count($arrobj)<=$end)
+		{
+			$end = count($arrobj);
+		}
+			
 		if(isset($arrobj) && $arrobj!="")
 		{
-			foreach ($arrobj as $r)
+			for($j=$start;$j<$end;$j++)
 			{ 
 				echo "<tr class='isi'>";
 				for($i=0;$i<count($tableview)-1;$i++)
 				{
 					
 					if($tableview[$i]=='informasi_kurikulum_id'){
-						echo "<td>20".$r->$tableview[$i]."/20".($r->$tableview[$i]+1)."</td>";
+						echo "<td>20".$arrobj[$j]->$tableview[$i]."/20".($arrobj[$j]->$tableview[$i]+1)."</td>";
 					}
 					else{
-						echo "<td>".$r->$tableview[$i]."</td>";
+						echo "<td>".$arrobj[$j]->$tableview[$i]."</td>";
 					}
 				}
 				echo "</tr>";
@@ -251,8 +283,18 @@
 		}
 		echo "</tbody>";
 		echo "</table>";
+		
+	//-------------------------------------MENAMPILKAN HALAMAN
+	for($i=0;$i<count($arrobj)/10;$i++)
+	{
+		$currentPageClass = "";
+		
+		echo anchor(site_url('pimpinanPMB/laporan').'/'.$i, ($i+1)."", "class='page " . $currentPageClass . "'");
+	}
+	//-----------------------------------------
 	?>
-
+	
+	
 </div>
 <?php require_once('footer.php'); ?>
 

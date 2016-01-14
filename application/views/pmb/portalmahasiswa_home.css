@@ -6,9 +6,10 @@
 	border-left: 10px solid #3873ae;
 }
 
-.footer {
-	position: absolute;
-	bottom: -100px;
+body, html {
+	height: 100%;
+	margin: 0;
+	padding: 0;
 }
 
 #overall_progress {
@@ -44,7 +45,6 @@
 #sudah_bar {
 	background-color: lime;
 	position: absolute;
-	width: 100px;
 	height: 68px;
 	border-radius: 10px;
 	float:left;
@@ -80,7 +80,7 @@
 	margin-top: -35px;
 	margin-left: 60px;
 	border-radius: 10px;
-	background-color: #EDE8E3;
+	background-color: white;
 }
 
 #panel-heading-berkas {
